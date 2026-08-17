@@ -1,0 +1,8 @@
+{
+  "name": "Remix Drishti - Disaster \u0026 Public Grievance Portal",
+  "description": "Pixel-perfect Government of India styled landing header, dynamic hero banner carousel, and navigation system for Drishti AI-driven Disaster and Public Grievance Management Platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
