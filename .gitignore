@@ -1,1 +1,12 @@
+<<<<<<< HEAD
 node_modules/
+=======
+.venv/
+.venv-1/
+venv/
+.env
+*.pt
+__pycache__/
+*.pyc
+.vscode/
+>>>>>>> FETCH_HEAD
