@@ -1,1 +1,0 @@
-"""Drishti backend application package."""
