@@ -12,6 +12,8 @@ export interface CreateGrievanceInput {
   attachment_size?: string; attachment_url?: string;
 }
 export const getGrievances = () => apiRequest<ApiGrievance[]>('/api/v1/grievances');
+export const getGrievanceStatus = (registrationNumber: string) =>
+  apiRequest<ApiGrievance>(`/api/v1/grievances/lookup?registration_number=${encodeURIComponent(registrationNumber)}`);
 export const createGrievance = (payload: CreateGrievanceInput) =>
   apiRequest<ApiGrievance>('/api/v1/grievances', { method: 'POST', body: JSON.stringify(payload) });
 export const uploadAttachment = (file: File) => {

@@ -27,6 +27,7 @@ async def connect_to_mongo() -> AsyncIOMotorClient:
     global client
     if client is None:
         client = AsyncIOMotorClient(settings.MONGODB_URI, serverSelectionTimeoutMS=5000)
+    await client.admin.command("ping")
     return client
 
 

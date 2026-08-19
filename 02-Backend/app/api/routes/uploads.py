@@ -3,7 +3,9 @@ from __future__ import annotations
 import secrets
 from pathlib import Path
 
-from fastapi import APIRouter, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+
+from app.api.deps import require_roles
 
 router = APIRouter(prefix="/uploads", tags=["uploads"])
 
@@ -11,7 +13,10 @@ UPLOAD_DIR = Path(__file__).resolve().parents[3] / "uploads"
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
-async def upload_file(file: UploadFile = File(...)) -> dict:
+async def upload_file(
+    file: UploadFile = File(...),
+    _: dict = Depends(require_roles("citizen", "officer", "admin")),
+) -> dict:
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
     original_name = Path(file.filename or "upload.bin").name

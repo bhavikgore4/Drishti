@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Search, CheckCircle2, Clock, AlertTriangle, UserCheck, Shield, FileText, ArrowRight } from 'lucide-react';
 import { LanguageCode } from '../types';
+import { ApiGrievance, getGrievanceStatus } from '../api/grievances';
 
 interface StatusLookupModalProps {
   isOpen: boolean;
@@ -16,17 +17,27 @@ export const StatusLookupModal: React.FC<StatusLookupModalProps> = ({
   const [trackingId, setTrackingId] = useState('DRISHTI-2026-94821');
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<ApiGrievance | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!trackingId.trim()) return;
     setLoading(true);
-    setTimeout(() => {
+    setError(null);
+    setResult(null);
+    try {
+      const grievance = await getGrievanceStatus(trackingId.trim());
+      setResult(grievance);
       setLoading(false);
       setSearched(true);
-    }, 600);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : 'Unable to look up this grievance.');
+      setLoading(false);
+      setSearched(false);
+    }
   };
 
   return (
@@ -77,18 +88,18 @@ export const StatusLookupModal: React.FC<StatusLookupModalProps> = ({
           </form>
 
           {/* Search Result Display */}
-          {searched && (
+          {searched && result && (
             <div className="border border-gray-200 rounded-lg p-4 bg-slate-50 space-y-3 animate-in fade-in">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 pb-2.5">
                 <div>
                   <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">
                     Tracking ID
                   </span>
-                  <span className="font-mono font-bold text-gray-900 text-sm">{trackingId}</span>
+                  <span className="font-mono font-bold text-gray-900 text-sm">{result.registrationNumber}</span>
                 </div>
                 <span className="bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
                   <Clock size={12} className="text-amber-700" />
-                  <span>IN_PROGRESS (Under Nodal Officer Review)</span>
+                  <span>{result.status.replace('_', ' ').toUpperCase()}</span>
                 </span>
               </div>
 
@@ -96,19 +107,19 @@ export const StatusLookupModal: React.FC<StatusLookupModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
                 <div>
                   <span className="text-gray-500 block">AI Auto-Detected Department:</span>
-                  <strong className="text-gray-800">Ministry of Labour &amp; Employment (EPFO)</strong>
+                  <strong className="text-gray-800">{result.ministry || result.category || 'Not assigned'}</strong>
                 </div>
                 <div>
-                  <span className="text-gray-500 block">AI Confidence Score:</span>
-                  <strong className="text-emerald-700">96.4% (High Accuracy)</strong>
+                  <span className="text-gray-500 block">AI Triage:</span>
+                  <strong className="text-emerald-700">{result.aiTriaged ? 'Completed' : 'Pending'}</strong>
                 </div>
                 <div>
                   <span className="text-gray-500 block">Assigned Nodal Officer:</span>
-                  <strong className="text-gray-800">Shri R. K. Sharma (Deputy Director)</strong>
+                  <strong className="text-gray-800">{result.category || 'Assignment pending'}</strong>
                 </div>
                 <div>
                   <span className="text-gray-500 block">Expected Resolution SLA:</span>
-                  <strong className="text-blue-800">Remaining 6 Days (Target: 30 Days)</strong>
+                  <strong className="text-blue-800">Priority: {(result.priority || 'medium').toUpperCase()}</strong>
                 </div>
               </div>
 
@@ -150,7 +161,9 @@ export const StatusLookupModal: React.FC<StatusLookupModalProps> = ({
             </div>
           )}
 
-          {!searched && (
+          {error && <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">{error}</p>}
+
+          {!searched && !error && (
             <div className="text-center py-6 text-gray-500 text-xs sm:text-sm">
               <FileText size={32} className="mx-auto text-gray-400 mb-2" />
               Enter your tracking registration number received via SMS or acknowledgment PDF.

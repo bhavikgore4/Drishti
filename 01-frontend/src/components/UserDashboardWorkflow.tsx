@@ -58,6 +58,7 @@ import { DisasterWeatherMap } from './DisasterWeatherMap';
 import { ResolutionProofModal } from './ResolutionProofModal';
 import { getNodalOfficerForGrievance } from '../utils/nodalOfficerData';
 import { ApiGrievance, createGrievance, getGrievances, uploadAttachment } from '../api/grievances';
+import { triageGrievance } from '../api/ml';
 
 interface UserDashboardWorkflowProps {
   currentLang: LanguageCode;
@@ -345,49 +346,23 @@ export const UserDashboardWorkflow: React.FC<UserDashboardWorkflowProps> = ({
   const closedCount = grievances.filter((g) => g.status === 'Closed' || g.status === 'Resolved').length;
 
   // AI Auto-Fill Logic when text is typed or image uploaded
-  const triggerAiInference = (text: string, fileName?: string) => {
+  const triggerAiInference = async (text: string, fileName?: string) => {
+    if (!text.trim()) {
+      setAiDetectedTag(null);
+      return;
+    }
     setIsAiAnalyzing(true);
-    setTimeout(() => {
+    try {
+      const result = await triageGrievance(text, fileName);
+      setSelectedMinistry(result.ministry);
+      setSelectedMainCategory(result.category);
+      setSelectedSubCategory(result.subCategory);
+      setAiDetectedTag(`AI Detected: ${result.label} (${Math.round(result.confidence * 100)}%)`);
+    } catch {
+      setAiDetectedTag('Automated triage is unavailable; please select the grievance category manually.');
+    } finally {
       setIsAiAnalyzing(false);
-      const combined = `${text} ${fileName || ''}`.toLowerCase();
-
-      if (combined.includes('flood') || combined.includes('water') || combined.includes('rain') || combined.includes('boat') || combined.includes('drain')) {
-        setSelectedMinistry('Ministry of Home Affairs / NDMA');
-        setSelectedMainCategory('Disaster Relief & Emergency Response');
-        setSelectedNextCategory('Urban Flooding Relief & Evacuation');
-        setSelectedSubCategory('Immediate Rescue Boat Deployment & Dewatering');
-        setSelectedHeadquarters('Mumbai Suburban Disaster Cell');
-        setAiDetectedTag('AI Detected: Disaster Relief / Urban Inundation & Flood Emergency');
-      } else if (combined.includes('road') || combined.includes('bridge') || combined.includes('highway') || combined.includes('landslide') || combined.includes('traffic')) {
-        setSelectedMinistry('Ministry of Road Transport and Highways');
-        setSelectedMainCategory('National Highway Repair & Landslide Clearance');
-        setSelectedNextCategory('Bridge Structural Hazard & Road Cave-in');
-        setSelectedSubCategory('Immediate Debris Clearance & Heavy Machinery Access');
-        setSelectedHeadquarters('NHAI Regional Office - Western Zone');
-        setAiDetectedTag('AI Detected: Highway Damage & Landslide Emergency');
-      } else if (combined.includes('pf') || combined.includes('provident') || combined.includes('pension') || combined.includes('salary') || combined.includes('labour')) {
-        setSelectedMinistry('Labour and Employment');
-        setSelectedMainCategory('Employee Provident Fund Organisation');
-        setSelectedNextCategory('PF related');
-        setSelectedSubCategory('Delay or non-settlement of PF Advance');
-        setSelectedHeadquarters('Guntur Regional Office');
-        setAiDetectedTag('AI Detected: EPFO Public Service Grievance');
-      } else if (combined.includes('health') || combined.includes('hospital') || combined.includes('medicine') || combined.includes('doctor')) {
-        setSelectedMinistry('Ministry of Health and Family Welfare');
-        setSelectedMainCategory('Public Health Emergency & Epidemic Prevention');
-        setSelectedNextCategory('Emergency Medical Aid Supplies');
-        setSelectedSubCategory('Mobile Health Clinic Deployment');
-        setSelectedHeadquarters('State Disaster Health Taskforce');
-        setAiDetectedTag('AI Detected: Emergency Health & Medical Relief');
-      } else {
-        setSelectedMinistry('Ministry of Home Affairs / NDMA');
-        setSelectedMainCategory('Disaster Relief & Emergency Response');
-        setSelectedNextCategory('Disaster Damage Assessment');
-        setSelectedSubCategory('General Public Safety & Relief Grant');
-        setSelectedHeadquarters('District Collectorate Command Center');
-        setAiDetectedTag('AI Detected: General Grievance / Emergency Triage');
-      }
-    }, 600);
+    }
   };
 
   // Handle File Upload

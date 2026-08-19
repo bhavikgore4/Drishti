@@ -1,8 +1,88 @@
-.venv/
-.venv-1/
-venv/
-.env
-*.pt
-__pycache__/
-*.pyc
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors/IDEs
 .vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Node / frontend
+node_modules/
+dist/
+build/
+.vite/
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# TypeScript / Vite cache
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+.venv/
+venv/
+ENV/
+env/
+**/.venv/
+
+# Python tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage/
+htmlcov/
+
+# Virtual environment folders in subprojects
+**/.venv/
+
+# Environment / secrets (allow committed examples)
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# Capacitor / Android
+# Keep source but ignore build artifacts and local config
+**/android/.gradle/
+**/android/build/
+**/android/app/build/
+**/android/local.properties
+**/android/.cxx/
+**/android/gradle.properties
+**/android/captures/
+
+# Gradle
+.gradle/
+
+# Uploads and runtime artifacts
+02-Backend/uploads/
+01-frontend/www/
+
+# ML artifacts (do not ignore tracked model files automatically) - ignore caches and checkpoints
+__models_cache__/
+*.ckpt
+*.log
+*.tsv
+
+# Misc
+*.sqlite3
+*.db
+.DS_Store
+*.class
+
+# JetBrains
+*.iml
+.idea/
+
+# macOS
+._*
+

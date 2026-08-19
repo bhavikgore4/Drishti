@@ -6,11 +6,12 @@ from typing import Any, Literal
 
 from bson import ObjectId
 from bson.errors import InvalidId
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from app.api.deps import get_current_user, require_roles
 from app.database import get_database
+from app.services.ml import MLEngineUnavailable, triage_grievance
 
 router = APIRouter(prefix="/grievances", tags=["grievances"])
 
@@ -136,6 +137,10 @@ async def create_grievance(
     now = datetime.utcnow()
     docket_number = await _build_docket_number(db)
     citizen_id = current_user["_id"]
+    try:
+        ml_result = await triage_grievance(payload.description, payload.attachment_name)
+    except MLEngineUnavailable:
+        ml_result = None
 
     grievance_document = {
         "docket_number": docket_number,
@@ -148,7 +153,7 @@ async def create_grievance(
         "sub_category": payload.sub_category.strip() if payload.sub_category else None,
         "location": payload.location.strip() if payload.location else None,
         "priority": payload.priority or "medium",
-        "ai_triaged": False,
+        "ai_triaged": ml_result is not None,
         "assigned_officer_id": None,
         "attachment_name": payload.attachment_name,
         "attachment_size": payload.attachment_size,
@@ -173,6 +178,7 @@ async def create_grievance(
             "status": "submitted",
             "docket_number": docket_number,
             "category": grievance_document["category"],
+            "ml_engine": ml_result.get("engine") if ml_result else None,
         },
     )
 
@@ -244,6 +250,16 @@ async def update_grievance_status(
     response = _serialize_grievance(updated)
     response["timeline"] = [_serialize_timeline_event(event) for event in timeline]
     return response
+
+
+@router.get("/lookup")
+async def lookup_grievance(registration_number: str = Query(min_length=1)) -> dict[str, Any]:
+    """Public, docket-number based status lookup used by the landing-page tracker."""
+    db = get_database()
+    grievance = await db.grievances.find_one({"docket_number": registration_number.strip()})
+    if grievance is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Grievance not found")
+    return _serialize_grievance(grievance)
 
 
 @router.get("/{id}")
