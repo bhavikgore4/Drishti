@@ -44,9 +44,9 @@
 - `POST /api/v1/triage` performs transparent keyword scoring across flood/water, road/landslide, EPFO, and health categories, then returns a general fallback if no rule matches.
 - It has no model file, model training, notebook, or accuracy evaluation in `03-ml-engine`.
 
-### CURRENT: legacy parallel application
+### CURRENT: optional legacy vision service
 
-The repository root `app/` contains a different FastAPI/SQLAlchemy/PostgreSQL-oriented application with YOLO, OpenCV, embeddings, spatial processing, WebSocket stream endpoints, and root-level `yolov8n.pt`. It is not imported by `02-Backend/main.py` or by frontend API modules. Treat it as **legacy/unintegrated** unless a task explicitly establishes otherwise. Its dependency manifest is **UNKNOWN**.
+`03-ml-engine/vision_service/` preserves the separate FastAPI/SQLAlchemy/PostgreSQL-oriented YOLO, OpenCV, embeddings, spatial-processing, and WebSocket prototype formerly located at repository root. Its model is `03-ml-engine/models/yolov8n.pt`; server and webcam-client dependency manifests now accompany it. It is not imported by `02-Backend/main.py` or frontend API modules. Treat it as **legacy/unintegrated** unless a task explicitly establishes otherwise.
 
 `02-Backend/app/main.py`, `app/routes/`, and `app/database_legacy/` are also an unintegrated, stale alternate backend stub. Its imports do not match the present `database_legacy` path and its auth route returns hard-coded tokens. The runnable primary entrypoint is specifically `02-Backend/main.py`; do not start the alternate module as the current service.
 
@@ -61,7 +61,6 @@ The repository root `app/` contains a different FastAPI/SQLAlchemy/PostgreSQL-or
 | `CORS_ORIGINS` | Backend | Additional allowed browser origins | CURRENT |
 | `ML_ENGINE_URL`, `ML_ENGINE_TIMEOUT_SECONDS` | Backend | Separate ML service location and request timeout | CURRENT |
 | `ML_ENGINE_HOST`, `ML_ENGINE_PORT` | ML `.env.example` | Documented service host/port | PARTIALLY IMPLEMENTED: current `main.py` does not read them. |
-| `GEMINI_API_KEY`, `APP_URL` | Frontend `.env.example` | AI Studio-era configuration entries | UNKNOWN: no current frontend API module uses either. |
 
 ## Build and testing
 
@@ -74,7 +73,7 @@ The repository root `app/` contains a different FastAPI/SQLAlchemy/PostgreSQL-or
 | Live HTTP smoke flow | Backend + MongoDB + ML | Passed during latest integration work. |
 | `./gradlew assembleDebug` | Android APK | Blocked by external Gradle distribution download timeout; see [Progress](PROGRESS.md). |
 
-The root `test_*.py` scripts target the legacy root `app/` and are not a configured test suite for the primary `02-Backend` service. No `pytest.ini`, `pyproject.toml`, CI workflow, Dockerfile, or Docker Compose file was found.
+The old root diagnostic scripts targeting the relocated vision app were removed because they were ad-hoc import/connection probes, not a configured test suite. No `pytest.ini`, `pyproject.toml`, CI workflow, Dockerfile, or Docker Compose file was found.
 
 ## Existing technical decisions supported by evidence
 
@@ -88,6 +87,7 @@ The root `test_*.py` scripts target the legacy root `app/` and are not a configu
 ## Technical debt and constraints
 
 - The frontend contains substantial presentation/demo data and sample timeline content not all backed by APIs.
+- The optional vision service remains separate from the current MongoDB/FastAPI topology and retains unverified PostgreSQL persistence code.
 - OTP, Parichay SSO, reminders/SMS, CPGRAMS-ledger messaging, and officer auto-assignment shown in frontend UI are not backed by the current primary API.
 - Uploads have no documented file-size/type allowlist or malware scanning.
 - `/api/v1/disaster/seed` has no authentication requirement.

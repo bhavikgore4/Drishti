@@ -27,14 +27,14 @@ npm run clean
 # Install dependencies (in venv)
 pip install -r requirements.txt
 
-# Run primary backend (runs on http://localhost:8000)
-python -m uvicorn app.main:app --reload --port 8000
+# From 02-Backend: run the primary backend (http://localhost:8000)
+python -m uvicorn main:app --reload --port 8000
 
 # Type checking
-python -m py_compile app/**/*.py  # or use mypy if configured
+python -m compileall -q .  # or use mypy if configured
 
 # Import/syntax check
-python -c "from app.main import app; print('OK')"
+python -c "from main import app; print('OK')"
 ```
 
 ### ML Engine (`03-ml-engine`)
@@ -47,6 +47,10 @@ python -m uvicorn main:app --reload --port 8001
 
 # Health check
 curl http://localhost:8001/health
+
+# Optional legacy vision service (YOLO/WebSocket; separate from triage)
+pip install -r requirements-vision.txt
+python -m uvicorn vision_service.main:app --reload --port 8002
 ```
 
 ### Database
@@ -66,7 +70,7 @@ curl http://localhost:8001/health
 | `02-Backend` | FastAPI + Motor (async MongoDB) + PyJWT + bcrypt | Primary REST API, auth, data persistence | 8000 |
 | `03-ml-engine` | FastAPI | Triage classification (rule-based, not ML-based) | 8001 |
 | MongoDB | Motor async driver | Stores users, grievances, officers, timeline, hotspots | 27017 |
-| Root `app/` | FastAPI + WebSocket + YOLO | Unintegrated legacy; do not use | — |
+| `03-ml-engine/vision_service` | FastAPI + WebSocket + YOLO | Optional unintegrated legacy vision prototype | 8002 |
 
 ### Core flows
 
@@ -132,6 +136,8 @@ curl http://localhost:8001/health
 **File structure:**
 - `main.py`: FastAPI app with `/health` and `/api/v1/triage` POST endpoint
 - `triage.py`: Triage logic (rule-based keyword matching, not neural)
+- `vision_service/`: optional separate YOLO/WebSocket/scene-memory service; do not import it into the triage process
+- `models/yolov8n.pt`: YOLO model used only by `vision_service`
 
 **Pattern:**
 - Request: `TriageRequest` with `description` and optional `filename`
@@ -146,13 +152,13 @@ curl http://localhost:8001/health
 - **Do not use** `02-Backend/app/main.py` (alternate stub), `app/routes/`, or `app/database_legacy/` as entrypoints; they are stale
 - **Do not modify** the primary architecture without reading ARCHITECTURE.md
 - **Do not create mocks** of external services (Open-Meteo, CPGRAMS, SMS, etc.) unless a task explicitly asks for a labeled prototype fallback
-- **Always test** backend changes with `python -c "from app.main import app"` to catch import/syntax errors early
+- **Always test** backend changes from `02-Backend` with `python -c "from main import app; print('OK')"` to catch import/syntax errors early
 - **Always verify** environment configuration (`.env`) before running backend or ML engine; missing keys will cause startup failures
 
 ## Verification baseline
 
 - **Frontend:** `npm run lint` (TypeScript check), `npm run build` (production build)
-- **Backend:** `python -c "from app.main import app"` (import check), `python -m py_compile app/**/*.py` (syntax)
+- **Backend:** from `02-Backend`, `python -c "from main import app; print('OK')"` (import check), `python -m compileall -q .` (syntax)
 - **ML Engine:** `curl http://localhost:8001/health` (health check) after `python -m uvicorn main:app --reload --port 8001`
 - **Integration:** All three services running locally; test key flows (auth, triage, disaster map) via browser
 

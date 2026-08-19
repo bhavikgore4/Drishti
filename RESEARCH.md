@@ -16,27 +16,27 @@
 
 ### Existing related code outside the active topology
 
-- Root `app/` contains YOLO/OpenCV/WebSocket/spatial/embedding code and root `yolov8n.pt` exists.
-- That code references PostgreSQL/SQLAlchemy/pgvector in its own configuration and model files.
-- No dependency manifest was found for that root application, and it is not imported by `02-Backend` or referenced by frontend API modules.
+- `03-ml-engine/vision_service` contains the preserved YOLO/OpenCV/WebSocket/spatial/embedding prototype, and its model is `03-ml-engine/models/yolov8n.pt`.
+- That code references PostgreSQL/SQLAlchemy/pgvector in its own configuration and model files; server/client dependency manifests now accompany it.
+- It is not imported by `02-Backend` or referenced by frontend API modules.
 - Therefore it must not be represented as active ML functionality without a deliberate integration task.
 - `02-Backend/app/main.py` and `app/routes/auth.py` are a separate stale stub with hard-coded “hackathon” tokens; its database import does not match the current `app/database_legacy` directory. It is not the primary `02-Backend/main.py` entrypoint.
 
 ### Frontend discoveries
 
 - Leaflet renders the disaster map; hotspots come from backend while weather comes directly from Open-Meteo.
-- `@google/genai` and AI Studio environment comments are present in frontend dependencies/example environment, but no current API module invokes Gemini. Current use is **UNKNOWN**.
 - Capacitor Android is configured with application id `com.drishti.civic` and web directory `dist`.
 
 ## Useful resources in this repository
 
 | Resource | Purpose |
 |---|---|
-| `01-frontend/README.md` | Product/UI narrative and local frontend commands. Some described features exceed current API evidence. |
+| Root [README.md](README.md) and shared context documents | Product/UI narrative and current implementation boundaries. |
 | `01-frontend/src/api/` | Authoritative frontend API expectations. |
 | `02-Backend/app/api/routes/` | Authoritative primary REST route behavior. |
 | `02-Backend/app/database.py` and `app/db/indexes.py` | Current MongoDB data initialization and indexes. |
 | `03-ml-engine/triage.py` | Current transparent triage logic. |
+| `03-ml-engine/vision_service/` | Optional legacy vision prototype, isolated from active triage. |
 | `CONTRACTS.md` | Condensed interface reference. |
 
 ## External references used by current code
@@ -51,7 +51,7 @@
 ## Open questions
 
 - What production identity, notification, hosting, file-storage, and privacy requirements apply? **UNKNOWN — requires confirmation**.
-- Is the root YOLO/vision application intended to be revived, migrated, or removed? **UNKNOWN — requires confirmation**.
+- Is the optional YOLO/vision service intended to be integrated or removed? **UNKNOWN — requires confirmation**.
 - Are the full hotspot data and the extensive sample UI data authoritative operational data or demo content? **UNKNOWN — requires confirmation**.
 - What evaluation data and acceptance threshold should replace the keyword ML baseline? **UNKNOWN — requires confirmation**.
 - Are public docket lookups acceptable under the project's privacy policy? **UNKNOWN — requires confirmation**.

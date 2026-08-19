@@ -1,0 +1,10 @@
+-r requirements.txt
+numpy
+opencv-python
+ultralytics
+sentence-transformers
+python-multipart
+pydantic-settings
+sqlalchemy
+psycopg2-binary
+pgvector

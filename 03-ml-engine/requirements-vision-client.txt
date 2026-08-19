@@ -1,0 +1,6 @@
+opencv-python
+requests
+websocket-client
+pyttsx3
+sounddevice
+SpeechRecognition

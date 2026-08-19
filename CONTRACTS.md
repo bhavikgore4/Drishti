@@ -72,4 +72,4 @@
 - `CreateGrievanceRequest.category` is required even though backend independently invokes triage; frontend supplies it after a triage result or current form state. This is IMPLEMENTED, not automatic backend field replacement.
 - The UI exposes OTP, Parichay SSO, reminder/SMS, CPGRAMS-ledger, and auto-assignment messaging, but there are no corresponding primary-backend endpoints or external service contracts. These are NOT IMPLEMENTED integrations.
 - ML engine host/port variables appear only in its example environment file; actual Uvicorn host/port are launch arguments. PARTIALLY IMPLEMENTED configuration.
-- Root legacy vision/WebSocket endpoints and the alternate `02-Backend/app/main.py` stub are not contracts of the current frontend/backend system. NOT YET IMPLEMENTED in this architecture.
+- Optional `03-ml-engine/vision_service` vision/WebSocket endpoints and the alternate `02-Backend/app/main.py` stub are not contracts of the current frontend/backend system. NOT YET IMPLEMENTED in this architecture.

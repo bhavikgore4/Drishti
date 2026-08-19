@@ -32,7 +32,7 @@ flowchart LR
 | `02-Backend/main.py` | Primary FastAPI application, CORS, route registration, static uploads, Mongo lifecycle | IMPLEMENTED |
 | MongoDB | Users, officers, grievances, timeline events, hotspots | IMPLEMENTED |
 | `03-ml-engine` | Local triage classification service | IMPLEMENTED |
-| Root `app/` | Separate YOLO/WebSocket/PostgreSQL-oriented application | NOT YET IMPLEMENTED as part of the primary architecture |
+| `03-ml-engine/vision_service` | Separate YOLO/WebSocket/scene-memory prototype; model in `03-ml-engine/models/` | NOT YET IMPLEMENTED as part of the primary frontend/backend architecture |
 | `02-Backend/app/main.py` and adjacent legacy folders | Stale alternate MongoDB/auth stub | NOT YET IMPLEMENTED as part of the primary architecture; do not use as entrypoint |
 | Open-Meteo | Weather source queried by frontend | IMPLEMENTED client integration |
 
@@ -92,7 +92,7 @@ flowchart LR
 
 ## Important boundaries
 
-- The current ML service is a deterministic rule-based prototype. It does not use the root-level `yolov8n.pt`.
-- The root legacy `app/` architecture is not connected to the frontend or `02-Backend`. Do not merge it into the primary path without an explicit design decision.
+- The active ML integration is the deterministic triage API on port 8001. The preserved vision service is a separate optional process on port 8002 and does not load during triage startup.
+- The YOLO model and vision code are consolidated under `03-ml-engine`; they are not connected to the frontend or `02-Backend`. Do not merge the vision service into the primary path without an explicit design decision.
 - `02-Backend/main.py` is the only evidenced primary backend entrypoint. The nested `02-Backend/app/main.py` is an alternate stale stub, not a second production service.
 - Weather is not proxied by the backend; browser availability and Open-Meteo availability affect that UI directly.

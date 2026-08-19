@@ -25,7 +25,7 @@ Documentation is a shared memory aid, not a substitute for inspecting current co
 - Preserve working functionality and make minimal, targeted changes.
 - Search before creating files, components, routes, schemas, or services; reuse existing implementations where appropriate.
 - Respect existing coding conventions and the established primary topology: `01-frontend` → `02-Backend` → MongoDB / `03-ml-engine`.
-- Treat root `app/` as unintegrated legacy code unless a task verifies and authorizes a change.
+- Treat `03-ml-engine/vision_service` as an unintegrated optional legacy vision prototype unless a task verifies and authorizes a change. The active primary ML contract remains the lightweight triage API.
 - Use `02-Backend/main.py` as the primary backend entrypoint. Treat `02-Backend/app/main.py`, `app/routes/`, and `app/database_legacy/` as unintegrated stale code unless a task explicitly addresses them.
 - Treat frontend OTP, Parichay SSO, SMS/reminder, CPGRAMS-ledger, and officer-assignment messaging as UI-only unless a current backend/external contract proves otherwise.
 - Do not create fake/mock integrations merely to make the system appear complete unless a task explicitly requires a clearly labeled prototype fallback.
