@@ -1,253 +1,567 @@
-# DRISHTI
+# 🌐 DRISHTI
 
-**An R&D prototype for AI-assisted civic grievance intake and disaster-risk awareness.**
+**AI-assisted civic grievance intelligence and disaster-risk awareness platform.**
 
-DRISHTI combines a React browser application, a FastAPI/MongoDB backend, and a local grievance-triage service. The active system supports account registration and sign-in, grievance submission and tracking, local attachment uploads, rule-based triage suggestions, and a seeded disaster-hotspot map with browser-fetched weather data.
+DRISHTI is an R&D prototype designed to improve how civic grievances are **submitted, understood, tracked, and connected with disaster-risk information**.
 
-The repository also preserves a separate computer-vision prototype. It is isolated from the active grievance workflow and is not required to run the primary application.
+The platform combines a **React web application**, **FastAPI backend**, **MongoDB**, and a lightweight **AI-assisted grievance triage service**. It also preserves an independent computer-vision prototype for future exploration.
 
-## Overview
+> 🚧 **Project Status:** Active R&D prototype — **not production-ready**.
 
-The active topology has three local services:
+---
 
-- \`01-frontend/\`: React single-page application for public, citizen, officer, dashboard, status-lookup, and disaster/weather-map views.
-- \`02-Backend/\`: the primary FastAPI API for JWT authentication, MongoDB records, uploads, hotspots, and ML-service proxying.
-- \`03-ml-engine/\`: the active FastAPI triage API plus an optional standalone vision prototype.
+## 📑 Table of Contents
 
-MongoDB persists the primary backend’s data. The frontend calls Open-Meteo directly for weather; weather is not proxied by the backend.
+* [🌐 Overview](#-overview)
+* [🚀 Core Capabilities](#-core-capabilities)
+* [🏗️ System Architecture](#️-system-architecture)
+* [📂 Repository Structure](#-repository-structure)
+* [🧰 Technology Stack](#-technology-stack)
+* [⚙️ Prerequisites](#️-prerequisites)
+* [📦 Installation](#-installation)
+* [▶️ Running DRISHTI](#️-running-drishti)
+* [👁️ Optional Vision Prototype](#️-optional-vision-prototype)
+* [🔌 API Reference](#-api-reference)
+* [🤖 AI / ML Architecture](#-ai--ml-architecture)
+* [🧪 Development & Verification](#-development--verification)
+* [📊 Project Status](#-project-status)
+* [⚠️ Known Limitations](#️-known-limitations)
+* [🔐 Security Considerations](#-security-considerations)
+* [🤝 Contribution Guidelines](#-contribution-guidelines)
+* [📜 License](#-license)
 
-## Key capabilities
+---
 
-Implemented in the primary architecture:
+# 🌐 Overview
 
-- Citizen registration/login and officer login with JWT bearer authentication.
-- MongoDB-backed grievance creation, listing, retrieval, status updates, and timeline events.
-- Public grievance lookup by docket/registration number.
-- Authenticated attachment upload, with files served by the backend from \`/uploads\`.
-- Deterministic triage of a description and optional filename, returning category, ministry, priority, confidence, and matching signals.
-- Seeded disaster hotspots served by the backend and displayed on the frontend map.
-- A Capacitor Android wrapper for the frontend source.
+DRISHTI is an **R&D prototype for AI-assisted civic grievance intake and disaster-risk awareness**.
 
-Not implemented as primary integrations:
+The primary application allows citizens to:
 
-- The YOLO/WebSocket/scene-memory service is a standalone prototype.
-- OTP, Parichay SSO, SMS/reminders, CPGRAMS-ledger activity, and officer auto-assignment appear in UI messaging but have no matching primary-backend integration.
+* 👤 Create an account and authenticate securely.
+* 📝 Submit civic grievances.
+* 📎 Attach supporting files.
+* 📍 Track submitted grievances.
+* 🔎 Look up grievances using a registration/docket number.
+* 🤖 Receive AI-assisted categorization and priority suggestions.
+* 🗺️ View seeded disaster-risk hotspots.
+* 🌦️ View weather information fetched directly from Open-Meteo.
 
-## Architecture
+The backend provides the core application API, persistence, authentication, file handling, disaster-hotspot data, and communication with the ML service.
 
-\`\`\`mermaid
+The repository also contains a separate **computer-vision prototype** based on YOLO, WebSockets, spatial analysis, and scene memory. This component is intentionally isolated from the primary grievance workflow.
+
+---
+
+# 🚀 Core Capabilities
+
+## 🏛️ Civic Grievance Management
+
+* 👤 Citizen registration and login
+* 🛡️ Officer authentication
+* 🔑 JWT bearer authentication
+* 🗄️ MongoDB-backed grievance storage
+* 📝 Grievance creation and retrieval
+* 🔄 Grievance status management
+* 🕒 Timeline events for grievance lifecycle changes
+* 🔎 Public grievance lookup using registration/docket numbers
+* 📎 Local attachment uploads
+
+## 🤖 AI-Assisted Triage
+
+The active ML engine analyzes:
+
+* 📝 Grievance description
+* 📄 Optional attachment filename
+
+It returns:
+
+* 🏷️ Category
+* 🏛️ Ministry
+* 📂 Subcategory
+* 🚨 Priority
+* 📈 Confidence
+* 🔍 Matching signals
+* ⚙️ Triage-engine identifier
+
+> 💡 The current implementation is a **transparent deterministic keyword-rule baseline**, not a trained machine-learning classifier.
+
+## 🌪️ Disaster Awareness
+
+The system currently supports:
+
+* 📍 Seeded disaster hotspots
+* 🗺️ Backend hotspot APIs
+* 🌦️ Browser-side weather information
+* 🧭 Map-based disaster-risk visualization
+
+Weather requests are **not proxied through the backend**.
+
+## 📱 Mobile Support
+
+The frontend includes a **Capacitor Android wrapper**, allowing the web application to be synchronized into an Android project.
+
+## 👁️ Experimental Computer Vision
+
+The repository also preserves an independent vision prototype containing:
+
+* 🎯 YOLO-based object detection
+* 🔌 WebSocket video streaming
+* 📐 Spatial analysis
+* 🧠 Sentence Transformer embeddings
+* 💾 In-memory scene memory
+* 🎙️ Optional webcam and speech client
+
+> ⚠️ The vision prototype is **not part of the primary DRISHTI application flow**.
+
+---
+
+# 🏗️ System Architecture
+
+```mermaid
 flowchart LR
-  F[React + Vite frontend<br/>01-frontend :3000]
-  B[Primary FastAPI backend<br/>02-Backend :8000]
-  D[(MongoDB<br/>drishti)]
-  M[FastAPI triage service<br/>03-ml-engine :8001]
-  U[Local upload files]
-  W[Open-Meteo]
+    F["🌐 React + Vite Frontend<br/>01-frontend<br/>:3000"]
+    B["⚡ Primary FastAPI Backend<br/>02-Backend<br/>:8000"]
+    D[("🗄️ MongoDB<br/>drishti")]
+    M["🤖 FastAPI Triage Service<br/>03-ml-engine<br/>:8001"]
+    U["📁 Local Upload Storage"]
+    W["🌦️ Open-Meteo"]
 
-  F -->|REST + JWT| B
-  B -->|Motor| D
-  B -->|POST /api/v1/triage| M
-  B --> U
-  F -->|direct weather fetch| W
-\`\`\`
+    F -->|"REST + JWT"| B
+    B -->|"Motor / MongoDB"| D
+    B -->|"POST /api/v1/triage"| M
+    B --> U
+    F -->|"Direct weather requests"| W
+```
 
-The frontend uses the backend for application data. The backend proxies triage requests to the ML engine. If that engine is unavailable, \`POST /api/v1/ml/triage\` returns \`503\`; grievance creation remains available and records \`aiTriaged: false\`.
+### 🔄 Primary Request Flow
 
-The optional vision service runs separately on port 8002 and has no frontend route or backend proxy.
+```text
+👤 Citizen
+   │
+   ▼
+🌐 React Frontend
+   │
+   │ REST + JWT
+   ▼
+⚡ FastAPI Backend
+   │
+   ├──────────────► 🗄️ MongoDB
+   │
+   ├──────────────► 📁 Local Upload Storage
+   │
+   └──────────────► 🤖 ML Triage Engine
+                         │
+                         ▼
+                    📊 Triage Result
+```
 
-## Repository structure
+The frontend communicates with the primary backend for application data.
 
-\`\`\`text
+The backend communicates with the ML engine for grievance triage.
+
+If the ML engine is unavailable:
+
+```text
+POST /api/v1/ml/triage
+        │
+        ▼
+      ❌ 503
+```
+
+However, grievance creation does **not** depend on ML availability. A grievance can still be created with:
+
+```json
+{
+  "aiTriaged": false
+}
+```
+
+The optional vision service runs independently on port `8002` and currently has no frontend route or primary-backend proxy.
+
+---
+
+# 📂 Repository Structure
+
+```text
 .
-├── 01-frontend/                 React/Vite/TypeScript web app and Capacitor Android project
+├── 01-frontend/
 │   ├── src/
-│   │   ├── api/                 Backend API client modules
-│   │   ├── components/          Landing, auth, dashboard, map, and workflow UI
-│   │   ├── assets/, i18n/      Images and translations
-│   │   └── types/, utils/      Frontend types and helpers
-│   ├── android/                Capacitor Android wrapper source
-│   ├── package.json            npm scripts and dependencies
-│   └── .env.example            Frontend configuration template
-├── 02-Backend/                 Primary FastAPI application
-│   ├── main.py                 Active application entry point
+│   │   ├── api/                  # 🔌 Backend API client modules
+│   │   ├── components/           # 🎨 UI components and workflows
+│   │   ├── assets/               # 🖼️ Static assets
+│   │   ├── i18n/                 # 🌍 Translations
+│   │   ├── types/                # 🧩 TypeScript types
+│   │   └── utils/                # 🛠️ Frontend utilities
+│   ├── android/                  # 📱 Capacitor Android wrapper
+│   ├── package.json
+│   └── .env.example
+│
+├── 02-Backend/
+│   ├── main.py                   # ⚡ Active FastAPI entry point
 │   ├── app/
-│   │   ├── api/routes/         Auth, grievance, upload, disaster, health, and ML routes
-│   │   ├── db/                 MongoDB models and indexes
-│   │   ├── services/ml.py      Triage-service HTTP client
-│   │   ├── config.py           Environment-backed settings
-│   │   └── database.py         Motor lifecycle and demo-data seeding
+│   │   ├── api/routes/            # 🔌 Active API routes
+│   │   ├── db/                    # 🗄️ MongoDB models and indexes
+│   │   ├── services/ml.py         # 🤖 ML service client
+│   │   ├── config.py              # ⚙️ Environment configuration
+│   │   └── database.py            # 🗄️ MongoDB lifecycle and seeding
+│   ├── uploads/                  # 📁 Local uploaded files
 │   ├── requirements.txt
 │   └── .env.example
-├── 03-ml-engine/               Consolidated ML-related services
-│   ├── main.py, triage.py      Active lightweight triage API and keyword rules
-│   ├── models/yolov8n.pt       YOLO model for the optional vision service
-│   ├── vision_service/         Optional YOLO/WebSocket/scene-memory FastAPI prototype
-│   │   ├── api/v1/endpoints/   Detection, streaming, and memory routes
-│   │   ├── services/           Detector, spatial analysis, embeddings, in-memory memory
-│   │   └── core/, db/, models/ Supporting configuration and modules
-│   ├── clients/client_stream.py Optional webcam, speech, and WebSocket client
-│   ├── requirements*.txt       Separate triage, vision, and client dependency manifests
+│
+├── 03-ml-engine/
+│   ├── main.py                   # 🤖 Active triage API
+│   ├── triage.py                 # 🧠 Keyword-rule triage engine
+│   ├── models/
+│   │   └── yolov8n.pt             # 🎯 YOLO model
+│   ├── vision_service/            # 👁️ Optional vision prototype
+│   │   ├── api/v1/endpoints/
+│   │   ├── services/
+│   │   ├── core/
+│   │   ├── db/
+│   │   └── models/
+│   ├── clients/
+│   │   └── client_stream.py       # 🎥 Optional webcam/speech client
+│   ├── requirements.txt
+│   ├── requirements-vision.txt
+│   ├── requirements-vision-client.txt
 │   └── .env.example
-├── 04-database/                Standalone synchronous PyMongo connection helper
-├── ARCHITECTURE.md             Current architecture and data flows
-├── CONTRACTS.md                API and integration contracts
-├── PROGRESS.md                 Status, validation record, and known issues
-└── PRD.md, TDR.md, RESEARCH.md Project and research context
-\`\`\`
+│
+├── 04-database/
+│   └── ...                        # 🗄️ Standalone PyMongo helper
+│
+├── ARCHITECTURE.md                # 🏗️ Architecture and data flows
+├── CONTRACTS.md                   # 🔌 API and integration contracts
+├── PROGRESS.md                    # 📊 Development and validation status
+├── PRD.md                         # 📋 Product requirements
+├── TDR.md                         # 🧠 Technical design decisions
+├── RESEARCH.md                    # 🔬 Research and project context
+└── README.md
+```
 
-\`02-Backend/main.py\` is the active backend entry point. The nested \`02-Backend/app/main.py\`, \`app/routes/\`, and \`app/database_legacy/\` are retained stale/alternate code, not part of the primary runtime.
+> ⚠️ **Important:** `02-Backend/main.py` is the active backend entry point. Older nested backend files are retained for reference and are **not part of the primary runtime**.
 
-## Technology stack
+---
 
-| Area | Technologies |
-| --- | --- |
-| Frontend | React 19, TypeScript, Vite 6, Tailwind CSS 4, Leaflet, Lucide React, Motion |
-| Mobile wrapper | Capacitor 8 and the Android project under \`01-frontend/android/\` |
-| Primary backend | FastAPI, Uvicorn, Pydantic, Motor/PyMongo, \`python-dotenv\` |
-| Auth | PyJWT and bcrypt |
-| Data store | MongoDB (default database: \`drishti\`) |
-| Active ML | FastAPI deterministic keyword-rule baseline |
-| Optional vision | Ultralytics YOLO, OpenCV, Sentence Transformers, WebSockets; separate speech/webcam client dependencies |
-| Tooling | TypeScript compiler, Vite build, Python \`compileall\` |
+# 🧰 Technology Stack
 
-## Prerequisites
+| Layer                | Technologies                                |
+| -------------------- | ------------------------------------------- |
+| 🌐 Frontend          | React 19, TypeScript, Vite 6                |
+| 🎨 UI                | Tailwind CSS 4, Lucide React, Motion        |
+| 🗺️ Maps             | Leaflet                                     |
+| 📱 Mobile            | Capacitor 8, Android                        |
+| ⚡ Backend            | FastAPI, Uvicorn, Pydantic                  |
+| 🗄️ Database         | MongoDB                                     |
+| 🔌 Database Driver   | Motor / PyMongo                             |
+| 🔐 Authentication    | JWT, PyJWT, bcrypt                          |
+| ⚙️ Configuration     | `python-dotenv`                             |
+| 🤖 Active ML         | FastAPI + deterministic keyword-rule engine |
+| 👁️ Vision Prototype | Ultralytics YOLO, OpenCV                    |
+| 🧠 Scene Memory      | Sentence Transformers                       |
+| 🔌 Realtime Vision   | WebSockets                                  |
+| 🛠️ Tooling          | TypeScript, Vite, Python `compileall`       |
 
-- Node.js and npm; the frontend includes an npm lockfile.
-- Python with \`venv\` and \`pip\`.
-- A reachable MongoDB instance. The primary backend default is \`mongodb://localhost:27017\`, database \`drishti\`.
+---
 
-The optional vision client also needs a camera, audio devices, and suitable platform support for OpenCV and audio packages.
+# ⚙️ Prerequisites
 
-## Installation and configuration
+Before running DRISHTI locally, install:
 
-Create local environment files from the tracked templates. Never commit \`.env\` files, credentials, API keys, JWT secrets, or database URIs containing credentials.
+* 🟢 Node.js
+* 📦 npm
+* 🐍 Python 3
+* 🧪 `venv`
+* 📦 `pip`
+* 🗄️ MongoDB
 
-### Frontend
+The primary backend expects:
 
-\`\`\`bash
+```text
+mongodb://localhost:27017
+```
+
+with the default database:
+
+```text
+drishti
+```
+
+The optional vision client additionally requires:
+
+* 📷 Camera
+* 🎙️ Audio input/output devices
+* 💻 Platform support for OpenCV and audio dependencies
+
+---
+
+# 📦 Installation
+
+## 🌐 1. Frontend
+
+```bash
 cd 01-frontend
+
 cp .env.example .env
+
 npm ci
-\`\`\`
+```
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| \`VITE_API_BASE_URL\` | \`http://localhost:8000\` | Backend base URL used by the browser API client |
+### Frontend Environment Variables
 
-### Primary backend
+| Variable            | Default                 | Purpose               |
+| ------------------- | ----------------------- | --------------------- |
+| `VITE_API_BASE_URL` | `http://localhost:8000` | ⚡ Primary backend URL |
 
-\`\`\`bash
+---
+
+## ⚡ 2. Primary Backend
+
+```bash
 cd 02-Backend
+
 python3 -m venv .venv
+
 source .venv/bin/activate
+
 pip install -r requirements.txt
+
 cp .env.example .env
-\`\`\`
+```
 
-| Variable | Template default | Purpose |
-| --- | --- | --- |
-| \`PROJECT_NAME\` | \`Drishti API\` | FastAPI title |
-| \`API_V1_STR\` | \`/api/v1\` | API prefix |
-| \`MONGODB_URI\` | \`mongodb://localhost:27017\` | MongoDB connection URI |
-| \`MONGODB_DB\` | \`drishti\` | Database name |
-| \`JWT_SECRET\` | development placeholder | JWT signing key; replace outside local development |
-| \`JWT_EXPIRE_MINUTES\` | \`60\` | Token lifetime in minutes |
-| \`ENVIRONMENT\` | \`development\` | Health/status response value |
-| \`CORS_ORIGINS\` | \`http://localhost:5173\` | Extra comma-separated origins; ports 3000 and 5173 are always included |
-| \`ML_ENGINE_URL\` | \`http://localhost:8001\` | Triage service base URL |
-| \`ML_ENGINE_TIMEOUT_SECONDS\` | \`3\` | Triage proxy timeout |
+### Backend Environment Variables
 
-On successful startup, the backend pings MongoDB, creates indexes, seeds demo officers, and seeds hotspots only when the hotspot collection is empty. Demo officer data is development-only and must not be used in a deployment.
+| Variable                    | Default                     | Purpose                       |
+| --------------------------- | --------------------------- | ----------------------------- |
+| `PROJECT_NAME`              | `Drishti API`               | FastAPI application title     |
+| `API_V1_STR`                | `/api/v1`                   | API prefix                    |
+| `MONGODB_URI`               | `mongodb://localhost:27017` | MongoDB connection URI        |
+| `MONGODB_DB`                | `drishti`                   | Database name                 |
+| `JWT_SECRET`                | Development placeholder     | 🔐 JWT signing secret         |
+| `JWT_EXPIRE_MINUTES`        | `60`                        | ⏱️ JWT lifetime               |
+| `ENVIRONMENT`               | `development`               | Runtime environment           |
+| `CORS_ORIGINS`              | `http://localhost:5173`     | 🌐 Additional allowed origins |
+| `ML_ENGINE_URL`             | `http://localhost:8001`     | 🤖 Triage service URL         |
+| `ML_ENGINE_TIMEOUT_SECONDS` | `3`                         | ⏱️ ML service timeout         |
 
-### ML engine
+### 🚀 Startup Behavior
 
-\`\`\`bash
+On successful startup, the backend:
+
+1. 🔌 Connects to MongoDB.
+2. ❤️ Verifies database connectivity.
+3. 🗂️ Creates required indexes.
+4. 👤 Seeds development/demo officer data.
+5. 📍 Seeds disaster hotspots if the hotspot collection is empty.
+
+> ⚠️ Demo officer accounts and seed data are intended for development only.
+
+---
+
+## 🤖 3. ML Engine
+
+```bash
 cd 03-ml-engine
+
 python3 -m venv .venv
+
 source .venv/bin/activate
+
 pip install -r requirements.txt
+
 cp .env.example .env
-\`\`\`
+```
 
-The active triage process has no required environment variables. The ML template documents intended ports; Uvicorn launch arguments set the actual host and port.
+The active triage engine does not require environment variables for local execution.
 
-## Running the primary application
+---
 
-Start MongoDB, then run the ML engine, backend, and frontend in separate terminals.
+# ▶️ Running DRISHTI
 
-\`\`\`bash
-# From 03-ml-engine, with its virtual environment active
-python -m uvicorn main:app --reload --host 127.0.0.1 --port 8001
-\`\`\`
+Start MongoDB first.
 
-\`\`\`bash
-# From 02-Backend, with its virtual environment active
-python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000
-\`\`\`
+Then run the three primary services in separate terminals.
 
-\`\`\`bash
-# From 01-frontend
+### 🤖 Terminal 1 — ML Engine
+
+```bash
+cd 03-ml-engine
+
+source .venv/bin/activate
+
+python -m uvicorn main:app \
+  --reload \
+  --host 127.0.0.1 \
+  --port 8001
+```
+
+### ⚡ Terminal 2 — Backend
+
+```bash
+cd 02-Backend
+
+source .venv/bin/activate
+
+python -m uvicorn main:app \
+  --reload \
+  --host 127.0.0.1 \
+  --port 8000
+```
+
+### 🌐 Terminal 3 — Frontend
+
+```bash
+cd 01-frontend
+
 npm run dev
-\`\`\`
+```
 
-The frontend runs at \`http://localhost:3000\`; backend API docs are at \`http://localhost:8000/docs\`; triage health is at \`http://localhost:8001/health\`.
+### 🔗 Local Services
 
-The frontend can still submit a manually categorized grievance when the triage process is down, but authenticated triage requests return \`503\`.
+| Service      | URL                            |
+| ------------ | ------------------------------ |
+| 🌐 Frontend  | `http://localhost:3000`        |
+| ⚡ Backend    | `http://localhost:8000`        |
+| 📚 API Docs  | `http://localhost:8000/docs`   |
+| 🤖 ML Engine | `http://localhost:8001`        |
+| ❤️ ML Health | `http://localhost:8001/health` |
 
-### Optional vision prototype
+---
 
-This is independent of the primary application:
+# 👁️ Optional Vision Prototype
 
-\`\`\`bash
+The computer-vision system is independent from the primary DRISHTI architecture.
+
+It runs on port `8002`.
+
+```bash
 cd 03-ml-engine
+
 source .venv/bin/activate
+
 pip install -r requirements-vision.txt
-python -m uvicorn vision_service.main:app --reload --host 127.0.0.1 --port 8002
-\`\`\`
 
-The detector resolves \`models/yolov8n.pt\` relative to source. The vision configuration declares a PostgreSQL URL and its dependency manifest contains SQLAlchemy/PostgreSQL/pgvector packages; its exposed endpoints currently use in-process scene memory and do not integrate with the primary MongoDB workflow.
+python -m uvicorn vision_service.main:app \
+  --reload \
+  --host 127.0.0.1 \
+  --port 8002
+```
 
-For the optional webcam client:
+### Vision Capabilities
 
-\`\`\`bash
+* 🎯 YOLO object detection
+* 📡 WebSocket JPEG streaming
+* 📐 Spatial analysis
+* 🧠 Scene-memory embeddings
+* 🔎 Semantic scene search
+
+The vision prototype currently has:
+
+* ❌ No frontend integration
+* ❌ No primary-backend proxy
+* ❌ No MongoDB integration
+* ❌ No production persistence layer
+
+### 🎥 Optional Webcam Client
+
+```bash
 cd 03-ml-engine
+
 pip install -r requirements-vision-client.txt
+
 python clients/client_stream.py
-\`\`\`
+```
 
-## API reference
+---
 
-All primary-backend endpoints are prefixed with \`/api/v1\`. Authenticated endpoints require \`Authorization: Bearer <JWT>\`.
+# 🔌 API Reference
 
-| Method | Endpoint | Auth | Purpose |
-| --- | --- | --- | --- |
-| \`GET\` | \`/health\` | No | Backend/MongoDB health |
-| \`GET\` | \`/status\` | No | Basic backend status |
-| \`POST\` | \`/auth/register\` | No | Register a citizen and return JWT/user |
-| \`POST\` | \`/auth/login\` | No | Citizen login by email or mobile |
-| \`POST\` | \`/auth/officer/login\` | No | Officer login by username |
-| \`GET\` | \`/auth/me\` | JWT | Current user |
-| \`GET\` | \`/grievances\` | JWT | Citizen's own records; all records for officer/admin |
-| \`POST\` | \`/grievances\` | Citizen JWT | Create grievance and initial timeline event |
-| \`GET\` | \`/grievances/lookup?registration_number=…\` | No | Public docket lookup |
-| \`GET\` | \`/grievances/{id}\` | JWT | Grievance/timeline; citizen ownership enforced |
-| \`PATCH\` | \`/grievances/{id}/status\` | Officer/admin JWT | Change status and create timeline event |
-| \`POST\` | \`/uploads\` | JWT | Store multipart \`file\` locally |
-| \`GET\` | \`/disaster/hotspots\` | No | List persisted hotspots |
-| \`POST\` | \`/disaster/seed\` | No | Seed/count hotspot data |
-| \`POST\` | \`/ml/triage\` | JWT | Proxy a triage request to ML engine |
+All primary backend endpoints use:
 
-### Triage request and response
+```text
+/api/v1
+```
 
-\`\`\`json
+Authenticated endpoints require:
+
+```http
+Authorization: Bearer <JWT>
+```
+
+## 🔐 Authentication
+
+| Method | Endpoint              | Auth   | Description                |
+| ------ | --------------------- | ------ | -------------------------- |
+| `GET`  | `/health`             | ❌      | Backend and MongoDB health |
+| `GET`  | `/status`             | ❌      | Backend status             |
+| `POST` | `/auth/register`      | ❌      | 👤 Register citizen        |
+| `POST` | `/auth/login`         | ❌      | 🔐 Citizen login           |
+| `POST` | `/auth/officer/login` | ❌      | 🛡️ Officer login          |
+| `GET`  | `/auth/me`            | 🔑 JWT | Current user               |
+
+## 📝 Grievances
+
+| Method  | Endpoint                                     | Auth                  | Description                     |
+| ------- | -------------------------------------------- | --------------------- | ------------------------------- |
+| `GET`   | `/grievances`                                | 🔑 JWT                | Retrieve accessible grievances  |
+| `POST`  | `/grievances`                                | 👤 Citizen JWT        | Create grievance                |
+| `GET`   | `/grievances/lookup?registration_number=...` | ❌                     | 🔎 Public grievance lookup      |
+| `GET`   | `/grievances/{id}`                           | 🔑 JWT                | Retrieve grievance and timeline |
+| `PATCH` | `/grievances/{id}/status`                    | 🛡️ Officer/Admin JWT | 🔄 Update status                |
+
+## 📎 Uploads
+
+| Method | Endpoint   | Auth   | Description                  |
+| ------ | ---------- | ------ | ---------------------------- |
+| `POST` | `/uploads` | 🔑 JWT | Store multipart file locally |
+
+## 🌪️ Disaster Data
+
+| Method | Endpoint             | Auth | Description                   |
+| ------ | -------------------- | ---- | ----------------------------- |
+| `GET`  | `/disaster/hotspots` | ❌    | 📍 Retrieve disaster hotspots |
+| `POST` | `/disaster/seed`     | ❌    | 🌱 Seed hotspot data          |
+
+## 🤖 ML
+
+| Method | Endpoint     | Auth   | Description                   |
+| ------ | ------------ | ------ | ----------------------------- |
+| `POST` | `/ml/triage` | 🔑 JWT | 🤖 Proxy request to ML engine |
+
+---
+
+# 🤖 AI / ML Architecture
+
+## 🧠 Active Triage Engine
+
+The active ML engine is intentionally lightweight and deterministic.
+
+It analyzes grievance text against predefined keyword rules covering areas such as:
+
+* 🌊 Flood and disaster emergencies
+* 🛣️ Road damage
+* 🏦 EPFO-related issues
+* 🏥 Health-related complaints
+* 📋 General fallback cases
+
+The engine returns a structured triage result.
+
+### Example Request
+
+```http
 POST /api/v1/ml/triage
+```
+
+```json
 {
   "description": "Flood water is entering our street",
   "filename": "photo.jpg"
 }
-\`\`\`
+```
 
-\`\`\`json
+### Example Response
+
+```json
 {
   "label": "Disaster Relief / Urban Inundation & Flood Emergency",
   "ministry": "Ministry of Home Affairs / NDMA",
@@ -255,80 +569,377 @@ POST /api/v1/ml/triage
   "subCategory": "Immediate Rescue Boat Deployment & Dewatering",
   "priority": "urgent",
   "confidence": 0.75,
-  "signals": ["flood", "water"],
+  "signals": [
+    "flood",
+    "water"
+  ],
   "engine": "keyword-baseline-v1"
 }
-\`\`\`
+```
 
-\`POST /api/v1/grievances\` requires \`description\` and \`category\`, with optional title, ministry, subcategory, location, priority, and attachment metadata. Valid status values are \`submitted\`, \`under_review\`, \`assigned\`, \`in_progress\`, \`resolved\`, and \`rejected\`.
+### ⚠️ Important
 
-The direct ML contract is:
+The current system should **not** be described as having a trained AI/ML classification model.
 
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| \`GET\` | \`http://localhost:8001/health\` | Engine health/identifier |
-| \`POST\` | \`http://localhost:8001/api/v1/triage\` | Keyword-rule triage |
+It is a:
 
-The standalone vision service additionally exposes \`POST /api/v1/vision/detect\`, \`WS /api/v1/stream/ws\`, and \`GET /api/v1/memory/semantic-search\`. These are not primary-backend APIs.
+> 🧠 **Deterministic keyword-rule baseline for AI-assisted grievance triage.**
 
-## ML engine
+There is currently:
 
-### Active triage
+* ❌ No training pipeline
+* ❌ No model-training dataset
+* ❌ No learned classifier
+* ❌ No evaluation benchmark
+* ❌ No calibrated confidence model
 
-\`03-ml-engine/main.py\` serves port 8001. \`triage.py\` scores the grievance text and optional filename against keyword rules for flood/disaster, road damage, EPFO, and health cases, then uses a general fallback. It is transparent and deterministic—not a trained/evaluated classifier—and has no training pipeline.
+The API contract is designed so that the baseline can later be replaced with a trained model without requiring a complete rewrite of the application.
 
-\`02-Backend/app/services/ml.py\` sends the matching JSON body to \`\${ML_ENGINE_URL}/api/v1/triage\`. The backend exposes it through its authenticated proxy and attempts it during grievance creation without making the database write depend on ML availability.
+---
 
-### Optional vision service
+# 🔄 Grievance Lifecycle
 
-\`03-ml-engine/vision_service/\` is a separate FastAPI application on port 8002. It loads YOLO from \`03-ml-engine/models/yolov8n.pt\`, supports uploaded-image detection, and accepts WebSocket JPEG frames for detection, spatial navigation cues, and in-memory Sentence Transformer scene-memory search. \`03-ml-engine/clients/client_stream.py\` is its local webcam/speech client.
+A grievance may progress through:
 
-It has no frontend integration, backend proxy, MongoDB integration, or production persistence path in the current architecture.
+```text
+📝 submitted
+      │
+      ▼
+🔍 under_review
+      │
+      ▼
+👤 assigned
+      │
+      ▼
+⚙️ in_progress
+      │
+      ├──────────────► ❌ rejected
+      │
+      ▼
+✅ resolved
+```
 
-## Development and verification
+Creating a grievance creates its initial timeline event.
 
-Run commands from their component directories:
+Status changes create additional timeline events.
 
-| Component | Command | Purpose |
-| --- | --- | --- |
-| Frontend | \`npm run lint\` | TypeScript check (\`tsc --noEmit\`) |
-| Frontend | \`npm run build\` | Production Vite build |
-| Frontend | \`npm run clean\` | Remove \`dist\` and \`server.js\` |
-| Backend | \`python -m compileall -q .\` | Python syntax compilation |
-| Backend | \`python -c "from main import app; print('OK')"\` | Import active FastAPI app |
-| ML engine | \`curl http://localhost:8001/health\` | Check running triage API |
-| Android wrapper | \`npx cap sync android\` | Synchronize web assets to Android source |
+---
 
-No repository CI configuration or primary-backend automated test suite is present. \`PROGRESS.md\` records completed frontend lint/build, backend import/OpenAPI checks, ML import/triage inference, and a local end-to-end auth → triage → grievance → lookup → hotspots flow. The latest frontend build has a Vite large-chunk warning but succeeds.
+# 🧪 Development & Verification
 
-## Project status
+## 🌐 Frontend
 
-This is an active prototype, not a completed production deployment.
+### TypeScript / Lint Check
 
-| State | Current evidence |
-| --- | --- |
-| Completed | Frontend/API client; FastAPI auth, grievance, upload, disaster, health, and ML routes; MongoDB indexes/demo data; backend-to-triage integration; local attachment serving; public lookup; Capacitor synchronization. |
-| In progress | The cleanup/consolidation awaits review and has not been committed, per \`PROGRESS.md\`. |
-| Planned / decisions needed | Production deployment/secrets; trained and evaluated triage model; upload scanning/storage policy; vision-prototype disposition; automated API tests. |
-| Known limitations | Keyword triage is not trained/evaluated; weather depends on direct Open-Meteo access; some dashboard/timeline content is sample/static UI; public seed and docket lookup need privacy/security decisions. |
-| Blocked verification | Android debug APK assembly could not complete because Gradle 8.14.3 download timed out; Capacitor sync passed. |
+```bash
+npm run lint
+```
 
-## Contribution guidance
+### Production Build
 
-- Use \`02-Backend/main.py\` and \`02-Backend/app/api/routes/\` for primary API work.
-- Add frontend service calls through \`01-frontend/src/api/\`, then run frontend checks.
-- Keep triage separate from \`vision_service/\` unless an explicit integration design is approved.
-- Update \`CONTRACTS.md\`, \`ARCHITECTURE.md\`, and \`PROGRESS.md\` when contracts, topology, or status changes.
-- Keep generated files, local environments, uploads, and credentials out of version control as directed by \`.gitignore\`.
+```bash
+npm run build
+```
 
-## Security notes
+### Clean Build Artifacts
 
-- Copy example configuration; never commit real \`.env\` files, signing keys, credentials, or API keys.
-- Replace the development \`JWT_SECRET\` before shared or deployed use.
-- Uploads currently store arbitrary bytes in \`02-Backend/uploads/\` and have no documented type validation, malware scanning, size limits, or retention policy.
-- \`POST /api/v1/disaster/seed\` is public, and public docket lookup needs product-level privacy/authorization review.
-- Verify provenance and licensing before distributing the tracked YOLO model or any downloaded Sentence Transformer assets.
+```bash
+npm run clean
+```
 
-## License
+---
 
-No license file is present in this repository. Do not assume permission to redistribute or reuse the project beyond rights granted by its owners.
+## ⚡ Backend
+
+### Python Syntax Verification
+
+```bash
+python -m compileall -q .
+```
+
+### Import Active FastAPI Application
+
+```bash
+python -c "from main import app; print('OK')"
+```
+
+---
+
+## 🤖 ML Engine
+
+### Health Check
+
+```bash
+curl http://localhost:8001/health
+```
+
+---
+
+## 📱 Android
+
+Synchronize the web application with Android:
+
+```bash
+npx cap sync android
+```
+
+---
+
+# 📊 Validation Status
+
+Current development validation includes:
+
+* ✅ Frontend lint/build verification
+* ✅ Backend Python compilation
+* ✅ Backend application import verification
+* ✅ OpenAPI generation checks
+* ✅ ML engine import verification
+* ✅ Triage inference checks
+* ✅ Authentication flow
+* ✅ Grievance creation
+* ✅ Grievance lookup
+* ✅ Disaster-hotspot retrieval
+* ✅ Frontend/backend integration
+* ✅ Capacitor synchronization
+
+Currently unavailable:
+
+* ❌ Repository CI configuration
+* ❌ Comprehensive automated API test suite
+* ❌ Production deployment pipeline
+
+The latest frontend build succeeds, although Vite reports a large-chunk warning.
+
+---
+
+# 📊 Project Status
+
+DRISHTI is an **active R&D prototype**.
+
+| Area                             | Status             |
+| -------------------------------- | ------------------ |
+| 🌐 React frontend                | ✅ Implemented      |
+| 🔐 Authentication                | ✅ Implemented      |
+| 🛡️ JWT authorization            | ✅ Implemented      |
+| 📝 Grievance management          | ✅ Implemented      |
+| 🕒 Grievance timeline            | ✅ Implemented      |
+| 📎 Local attachments             | ✅ Implemented      |
+| 🔎 Public grievance lookup       | ✅ Implemented      |
+| 🌪️ Disaster hotspots            | ✅ Implemented      |
+| 🌦️ Weather integration          | ✅ Implemented      |
+| 🤖 Backend ↔ ML integration      | ✅ Implemented      |
+| 🧠 Keyword-rule triage           | ✅ Implemented      |
+| 📱 Capacitor synchronization     | ✅ Implemented      |
+| 👁️ Vision prototype             | 🧪 Experimental    |
+| 🧠 Trained triage model          | 🔴 Not implemented |
+| 🧪 Automated API tests           | 🔴 Not implemented |
+| ☁️ Production deployment         | 🔴 Not implemented |
+| 🔐 Production security hardening | 🔴 Not implemented |
+
+---
+
+# ⚠️ Known Limitations
+
+### 1. 🧠 Triage Is Not a Trained Model
+
+The active triage system is a deterministic keyword-rule baseline.
+
+Its confidence score should **not** be interpreted as the calibrated probability of a trained classifier.
+
+### 2. 🌦️ Weather Depends on External Availability
+
+Weather data is fetched directly by the browser from Open-Meteo.
+
+The application therefore depends on network and external API availability.
+
+### 3. 🖥️ Some UI Content Is Demonstrative
+
+Certain dashboard, timeline, and workflow elements contain sample/static content rather than fully integrated backend data.
+
+### 4. 📎 Upload Security Is Incomplete
+
+Uploaded files currently lack a complete production-grade security pipeline.
+
+Missing controls include:
+
+* MIME/type validation
+* Malware scanning
+* File-size enforcement
+* Content inspection
+* Retention policy
+* Secure object storage
+* Access-control hardening
+
+### 5. 🌱 Public Disaster Seeding
+
+`POST /api/v1/disaster/seed` is currently publicly accessible and requires authorization review before production deployment.
+
+### 6. 🔎 Public Grievance Lookup
+
+The public docket lookup mechanism requires additional privacy and authorization decisions before production use.
+
+### 7. 📱 Android Build Verification
+
+Capacitor synchronization succeeds, but Android debug APK assembly has previously been blocked by a Gradle `8.14.3` download timeout.
+
+### 8. 👁️ Vision Prototype
+
+The vision service remains an experimental subsystem and should not be interpreted as part of the active civic-grievance architecture.
+
+---
+
+# 🧩 Features Shown in UI but Not Fully Integrated
+
+Some concepts appear in the interface or project design but do not currently have matching primary-backend integrations.
+
+These include:
+
+* 🔢 OTP authentication
+* 🪪 Parichay SSO
+* 📱 SMS notifications/reminders
+* ⛓️ CPGRAMS ledger activity
+* 👮 Automatic officer assignment
+* 🧠 Production-grade AI classification
+* 🌪️ Production disaster prediction
+* 👁️ Integrated computer vision
+
+These should be treated as **planned or conceptual functionality**, not currently implemented capabilities.
+
+---
+
+# 🔐 Security Considerations
+
+DRISHTI is a prototype and should **not be deployed as-is for handling sensitive civic data**.
+
+Before production deployment:
+
+* 🔑 Replace the development `JWT_SECRET`.
+* 🔐 Use secure secret management.
+* 🚫 Never commit `.env` files.
+* 🚫 Never commit credentials or API keys.
+* 📎 Enforce strict upload validation.
+* 🦠 Add malware scanning.
+* 📏 Add upload size limits.
+* 🗑️ Define file-retention policies.
+* 🔒 Restrict public administrative endpoints.
+* 👤 Review public grievance lookup privacy.
+* 🌐 Harden CORS configuration.
+* 🚦 Add rate limiting.
+* 🧪 Add comprehensive authorization tests.
+* 📋 Add audit logging.
+* ☁️ Use secure production storage for attachments.
+* 📜 Review third-party model and dataset licenses.
+* 🎯 Verify redistribution rights for `yolov8n.pt`.
+* 🧠 Verify provenance and licensing of downloaded Sentence Transformer assets.
+
+---
+
+# 🗄️ Data & Persistence
+
+The primary application uses MongoDB.
+
+Default configuration:
+
+```text
+MongoDB URI: mongodb://localhost:27017
+Database:    drishti
+```
+
+MongoDB stores primary application data including:
+
+* 👤 Users
+* 📝 Grievances
+* 🕒 Grievance timelines
+* 📍 Disaster hotspots
+* 📊 Application metadata
+
+Uploaded files are currently stored locally under:
+
+```text
+02-Backend/uploads/
+```
+
+The optional vision prototype currently relies on in-process memory for scene-memory functionality and does not participate in the primary MongoDB persistence architecture.
+
+---
+
+# 📚 Architecture Documentation
+
+Additional project documentation is maintained in:
+
+| Document          | Purpose                                |
+| ----------------- | -------------------------------------- |
+| `ARCHITECTURE.md` | 🏗️ System architecture and data flows |
+| `CONTRACTS.md`    | 🔌 API and integration contracts       |
+| `PROGRESS.md`     | 📊 Development and validation status   |
+| `PRD.md`          | 📋 Product requirements                |
+| `TDR.md`          | 🧠 Technical design decisions          |
+| `RESEARCH.md`     | 🔬 Research and project context        |
+
+When modifying architecture or API contracts, update the corresponding documentation.
+
+---
+
+# 🤝 Contribution Guidelines
+
+When contributing to DRISHTI:
+
+1. 🧩 Keep primary application logic separate from experimental services.
+2. ⚡ Use `02-Backend/main.py` as the active backend entry point.
+3. 🔌 Place primary API routes under `02-Backend/app/api/routes/`.
+4. 🌐 Add frontend API communication through `01-frontend/src/api/`.
+5. 🤖 Keep the active triage service separate from `vision_service/`.
+6. 🔌 Update API contracts when request/response structures change.
+7. 🏗️ Update architecture documentation when topology changes.
+8. 📊 Update `PROGRESS.md` when implementation or validation status changes.
+9. 🔐 Never commit credentials, secrets, local environments, or generated uploads.
+10. 🧪 Run relevant verification commands before submitting changes.
+
+---
+
+# 📜 License
+
+No license file is currently present in this repository.
+
+Unless a license is added, **do not assume that the project is licensed for redistribution, modification, or commercial reuse** beyond rights explicitly granted by the project owners.
+
+---
+
+# 🚀 DRISHTI at a Glance
+
+```text
+                    🌐 DRISHTI
+                        │
+          ┌─────────────┴─────────────┐
+          │                           │
+          ▼                           ▼
+   🏛️ Civic Intelligence       🌪️ Disaster Awareness
+          │                           │
+          ▼                           ▼
+   📝 Grievance Intake         🗺️ Risk Hotspots
+   🤖 AI-Assisted Triage       🌦️ Weather
+   🔎 Tracking & Lookup
+          │
+          └─────────────┬─────────────┘
+                        │
+                        ▼
+                 ⚡ FastAPI Backend
+                        │
+              ┌─────────┼─────────┐
+              ▼         ▼         ▼
+          🗄️ MongoDB  🤖 ML     📁 Storage
+                        │
+                        ▼
+                 🧠 Triage Engine
+
+              ─────────────────────
+
+                 👁️ Experimental
+                Vision Prototype
+                        │
+              ┌─────────┼─────────┐
+              ▼         ▼         ▼
+           🎯 YOLO   📡 WebSocket  🧠 Memory
+```
+
+> **DRISHTI is currently a prototype foundation for exploring how civic grievance intelligence, AI-assisted triage, and disaster-risk awareness can converge into a unified public-service platform.**
